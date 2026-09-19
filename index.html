@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Verifyum, checked in your own browser</title>
+<meta name="description" content="A page on a host Verifyum does not control that verifies a Verifyum proof in the tab and reports its own verdict, including when it refuses one.">
+<link rel="stylesheet" href="assets/demo.css">
+</head>
+<body>
+
+<header>
+  <p class="eyebrow">Independent verification</p>
+  <h1>Do not take our word. <span class="accent">Take none of it.</span></h1>
+  <p class="lead">
+    This page is not served by Verifyum. It fetches a proof, checks the signature,
+    the anchor and the witness chain itself, and tells you what it found. You can
+    also break the proof on purpose and watch it refuse.
+  </p>
+</header>
+
+<main>
+
+  <section class="card">
+    <div class="field">
+      <label for="proof">Proof id</label>
+      <input id="proof" type="text" spellcheck="false" autocomplete="off" value="" placeholder="loading the newest proof…">
+      <p class="hint" id="proof-note">Looking up the most recently anchored proof…</p>
+    </div>
+
+    <div class="field">
+      <label for="rpc">Solana RPC to ask</label>
+      <input id="rpc" type="text" spellcheck="false" autocomplete="off" value="https://solana-rpc.publicnode.com">
+      <p class="hint">
+        Any Solana node that allows a browser will do. Verifyum's own node is deliberately
+        not offered here. Public nodes keep a shallow history, so the anchor step reports
+        honestly when a proof is older than what the node serves.
+      </p>
+    </div>
+
+    <fieldset>
+      <legend>Break it on purpose</legend>
+      <div class="tampers">
+        <label><input type="checkbox" name="tamper" value="commitment"> Change the commitment</label>
+        <label><input type="checkbox" name="tamper" value="key"> Swap the signing key</label>
+        <label><input type="checkbox" name="tamper" value="path"> Alter a Merkle step</label>
+      </div>
+    </fieldset>
+
+    <button id="run" type="button">Verify in this tab</button>
+
+    <ul class="checks" id="results"></ul>
+    <p class="summary" id="summary"></p>
+    <div id="links" hidden></div>
+  </section>
+
+  <h2>What each check actually does</h2>
+  <table>
+    <tr><th>Check</th><th>Where the answer comes from</th></tr>
+    <tr><td>The document is readable here</td><td>The proof's own host, which must allow a foreign page to read it. Until 2026-09-19 it did not.</td></tr>
+    <tr><td>The signature verifies</td><td>Ed25519 in WebCrypto, over the canonical bytes rebuilt in this tab, against the key in the public registry.</td></tr>
+    <tr><td>The anchor exists</td><td>A Solana node you choose. Not Verifyum's.</td></tr>
+    <tr><td>The memo matches</td><td>Rebuilt here from the metadata and compared, so the chain and the document have to agree.</td></tr>
+    <tr><td>The Merkle paths hold</td><td>SHA-256 in WebCrypto, folded step by step in this tab.</td></tr>
+    <tr><td>Others hold the checkpoint</td><td>The published receipts naming Bitcoin, a qualified EU timestamp, Sigsum and Certificate Transparency.</td></tr>
+  </table>
+
+  <h2>Your own file, if you have one</h2>
+  <section class="card">
+    <p class="hint" style="margin-top:0">
+      A proof commits to exact bytes without revealing them. If you hold a file and the
+      receipt written beside it, this checks that they belong together and that those
+      bytes are the ones anchored. Both stay in the tab. Nothing is uploaded, and the
+      nonce in your receipt is the secret half that Verifyum never had.
+    </p>
+    <div class="field">
+      <label for="file">The original file</label>
+      <input id="file" type="file">
+    </div>
+    <div class="field">
+      <label for="receipt">Its receipt, the .json written next to it</label>
+      <input id="receipt" type="file" accept=".json,application/json">
+    </div>
+    <button id="check-file" type="button" class="secondary">Check them against the chain</button>
+    <p class="summary" id="file-result"></p>
+  </section>
+
+  <h2>Why this is hosted somewhere else</h2>
+  <p>
+    A verifier served by the service it verifies proves very little. This page is on
+    GitHub Pages. The code is in its repository, it is short enough to read, and it
+    loads nothing from Verifyum: no library, no framework, no bundle. SHA-256 and
+    Ed25519 come from the browser.
+  </p>
+  <p>
+    The canonicalization and the Merkle rules here are written from the published
+    protocol rather than copied from the Verifyum client, on purpose. Running the
+    service's own code against the service's own answer would only show that the code
+    agrees with itself.
+  </p>
+  <p>
+    It still does not make this page neutral. We wrote it. What it removes is the host,
+    and what it adds is that the verdict is computed where you can watch it, including
+    the part where it says no.
+  </p>
+
+</main>
+
+<footer>
+  <p>
+    Verifyum is operated by AI SENSE AS. This page is not served by AI SENSE, and is not
+    part of the Verifyum service. It calls <code>verifyum.com</code> for public documents
+    and a Solana node of your choosing, and nothing else.
+  </p>
+</footer>
+
+<script type="module" src="assets/demo.js"></script>
+</body>
+</html>
