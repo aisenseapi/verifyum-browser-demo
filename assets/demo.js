@@ -217,6 +217,12 @@ async function checkFile() {
   try {
     const receipt = JSON.parse(await receiptInput.files[0].text());
     const manifest = receipt?.private_draft?.manifest;
+    // Receipts from `verifyum stamp` in the Node client 1.2.0 to 1.4.0 are
+    // real receipts with private_draft: null, so say that rather than that the
+    // file is not a receipt at all.
+    if (!manifest && typeof receipt?.proof_id === "string" && receipt?.private_draft === null) {
+      throw new Error("this receipt holds no private draft with a nonce, so nothing can tie the file to its proof. The Node verifyum stamp from 1.2.0 to 1.4.0, which the GitHub action ran until 9 November 2026, wrote receipts like this. Stamp the file again with 1.4.1 or later.");
+    }
     if (!manifest) throw new Error("that file is not a Verifyum receipt: no private_draft.manifest");
 
     const bytes = new Uint8Array(await fileInput.files[0].arrayBuffer());
